@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { DragDropContext, Droppable } from 'react-beautiful-dnd';
 
 const Column = ({ title, children, renderAction }) => (
   <div className="Column">
@@ -12,7 +13,13 @@ const Column = ({ title, children, renderAction }) => (
         </button>
       </div>
     </div>
-    <div className="Column__body">{children}</div>
+    <Droppable droppableId="droppable-1">
+      {(provided) => (
+        <div className="Column__body" ref={provided.innerRef} {...provided.droppableProps}>
+          {children}
+        </div>
+      )}
+    </Droppable>
   </div>
 );
 

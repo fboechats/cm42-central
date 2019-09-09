@@ -15,10 +15,32 @@ import { storyPropTypesShape } from '../../models/beta/story';
 import { projectBoardPropTypesShape } from '../../models/beta/projectBoard';
 import Notifications from '../Notifications';
 import { removeNotification } from '../../actions/notifications';
+import { DragDropContext } from 'react-beautiful-dnd';
+
+const reorder = (list, startIndex, endIndex) => {
+  const result = Array.from(list);
+  const [removed] = result.splice(startIndex, 1);
+  result.splice(endIndex, 0, removed);
+
+  return result;
+};
 
 class ProjectBoard extends React.Component {
   componentWillMount() {
     this.props.fetchProjectBoard(this.props.projectId);
+  }
+
+  onDragEnd(list, result) {
+    // dropped outside the list
+    if (!result.destination) {
+      return;
+    }
+
+    const items = reorder(
+      list,
+      result.source.index,
+      result.destination.index
+    );
   }
 
   render() {
@@ -35,40 +57,46 @@ class ProjectBoard extends React.Component {
           onRemove={removeNotification}
         />
 
-        <Column title={I18n.t("projects.show.chilly_bin")}
-          renderAction={() =>
-            <AddStoryButton
-              onAdd={() => createStory({
-                state: Story.status.UNSCHEDULED
-              })}
+        <DragDropContext>
+          <Column title={I18n.t("projects.show.chilly_bin")}
+            renderAction={() =>
+              <AddStoryButton
+                onAdd={() => createStory({
+                  state: Story.status.UNSCHEDULED,
+                })}
+              />
+            }
+          >
+            <Stories stories={this.props.chillyBinStories} />
+          </Column>
+        </DragDropContext>
+
+        <DragDropContext onDragEnd={() => this.onDragEnd(this.props.backlogSprints)}>
+          <Column
+            title={`${I18n.t("projects.show.backlog")} /
+            ${I18n.t("projects.show.in_progress")}`}
+            renderAction={() =>
+              <AddStoryButton
+                onAdd={() => createStory({
+                  state: Story.status.UNSTARTED
+                })}
+              />}
+          >
+            <Sprints
+              sprints={this.props.backlogSprints}
             />
-          }
-        >
-          <Stories stories={this.props.chillyBinStories} />
-        </Column>
+          </Column>
+        </DragDropContext>
 
-        <Column
-          title={`${I18n.t("projects.show.backlog")} /
-          ${I18n.t("projects.show.in_progress")}`}
-          renderAction={() =>
-            <AddStoryButton
-              onAdd={() => createStory({
-                state: Story.status.UNSTARTED
-              })}
-            />}
-        >
-          <Sprints
-            sprints={this.props.backlogSprints}
-          />
-        </Column>
-
-        <Column
-          title={I18n.t("projects.show.done")}>
-          <Sprints
-            sprints={this.props.doneSprints}
-            fetchStories={this.props.fetchPastStories}
-          />
-        </Column>
+        <DragDropContext>
+          <Column
+            title={I18n.t("projects.show.done")}>
+            <Sprints
+              sprints={this.props.doneSprints}
+              fetchStories={this.props.fetchPastStories}
+            />
+          </Column>
+        </DragDropContext>
       </div>
     );
   }
