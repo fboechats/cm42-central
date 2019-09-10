@@ -26,22 +26,37 @@ const reorder = (list, startIndex, endIndex) => {
 };
 
 class ProjectBoard extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      backLogStories: null,
+      chillyBinStories: null,
+    };
+    this.reorderBackLog = this.reorderBackLog.bind(this);
+    this.reorderChillyBin = this.reorderChillyBin.bind(this);
+  }
+
   componentWillMount() {
     this.props.fetchProjectBoard(this.props.projectId);
   }
 
-  onDragEnd(list, result) {
-    // dropped outside the list
+  reorderBackLog(result) {
+    console.log(result)
+  };
+
+  reorderChillyBin(result) {
     if (!result.destination) {
       return;
     }
 
     const items = reorder(
-      list,
+      this.state.chillyBinStories || this.props.chillyBinStories[0].stories,
       result.source.index,
       result.destination.index
     );
-  }
+
+    this.setState({ chillyBinStories: items });
+  };
 
   render() {
     if (!this.props.projectBoard.isFetched) {
@@ -71,7 +86,7 @@ class ProjectBoard extends React.Component {
           </Column>
         </DragDropContext>
 
-        <DragDropContext onDragEnd={() => this.onDragEnd(this.props.backlogSprints)}>
+        <DragDropContext onDragEnd={this.reorderBackLog}>
           <Column
             title={`${I18n.t("projects.show.backlog")} /
             ${I18n.t("projects.show.in_progress")}`}

@@ -9,11 +9,15 @@ const Stories = ({ stories }) => {
 
   return (
     <Fragment>
-      {stories.map((story, index) => (
+      {stories.map((story, index) => (!story.id ?
+
+      <StoryItem key={story.id} story={story} /> :
+
         <Draggable
         key={story.id}
         draggableId={story.id}
         index={index}
+        position={story.position}
       >
         {(provided) => (
           <div
